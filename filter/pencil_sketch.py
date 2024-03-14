@@ -1,4 +1,5 @@
 import cv2 as open_cv
+from utils import filter_image_output
 
 
 def pencil_sketch(img_folder, img_name):
@@ -14,6 +15,6 @@ def pencil_sketch(img_folder, img_name):
     img_blur = open_cv.GaussianBlur(img_gray, (255, 255), 0, 0)
     img_blend = open_cv.divide(img_gray, img_blur, scale=256)
 
-    open_cv.imwrite(img_folder + '/processed-pencil-sketch-' + img_name, img_blend)
+    open_cv.imwrite(filter_image_output(img_folder) + img_name, img_blend)
 
     return img_blend

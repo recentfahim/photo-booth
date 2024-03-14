@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+{% block title %} Home {% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="https://codictados.com/public/dics/min/dics.min.css">
+{% endblock %}
+{% block content %}
+    <div class="container flex justify-center mx-auto mt-4">
+        <div class="b-dics" style="width: 400px">
+            <img src="{{ original_image }}" alt="Original" />
+            <img src="{{ filter_image }}" alt="Processed" />
+        </div>
+    </div>
+    <div class="mt-5 text-center">
+            <a href="{{ url_for('home') }}">
+                <button type="button" class="rounded-lg px-4 py-2 bg-gray-200 hover:bg-gray-300 duration-300">Go Back Home</button>
+            </a>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://codictados.com/public/dics/min/dics.min.js"></script>
+    <script>
+        new Dics({
+          container: document.querySelector(".b-dics"),
+          textPosition: "bottom"
+        });
+    </script>
+{% endblock %}

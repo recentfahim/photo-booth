@@ -1,4 +1,5 @@
 import cv2 as open_cv
+from utils import filter_image_output
 
 
 def cantoon_filter(img_folder, img_name):
@@ -20,7 +21,7 @@ def cantoon_filter(img_folder, img_name):
     cartoon_img = open_cv.bitwise_and(color_img, color_img, mask=edges)
 
     # Save the cartoonized image
-    open_cv.imwrite(img_folder + '/processed-cartoon-filter-' + img_name, cartoon_img)
+    open_cv.imwrite(filter_image_output(img_folder) + img_name, cartoon_img)
 
     # # Apply Gaussian blur to reduce noise
     # blurred = open_cv.GaussianBlur(cartoon_img, (5, 5), 0)

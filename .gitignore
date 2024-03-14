@@ -9,3 +9,5 @@ docs/_build/
 dist/
 venv/
 .env
+static/original_image/
+static/filter_image/
