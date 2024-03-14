@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload</title>
+</head>
+<body>
+    <input type="file" id="image-input" accept="image/*">
+    <div id="image-container"></div>
+
+    <script>
+        const input = document.getElementById('image-input');
+        const container = document.getElementById('image-container');
+
+        input.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = (loadEvent) => {
+                const img = new Image();
+                img.src = loadEvent.target.result;
+                container.innerHTML = '';
+                container.appendChild(img);
+            };
+
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>
