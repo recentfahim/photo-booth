@@ -11,3 +11,4 @@ venv/
 .env
 static/original_image/
 static/filter_image/
+photo-booth.zip
