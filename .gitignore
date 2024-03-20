@@ -12,3 +12,4 @@ venv/
 static/original_image/
 static/filter_image/
 photo-booth.zip
+filter/face_acne

@@ -1,11 +1,6 @@
 from flask import Flask, request, render_template, send_from_directory, redirect, url_for
-from PIL import Image
-from filter.pencil_sketch import pencil_sketch
-from filter.cantoon_filter import cantoon_filter
-from filter.remove_bg import remove_background
-import uuid
 import os
-from utils import create_directory
+from utils import filter_request, get_image_response_path
 
 
 app = Flask(__name__)
@@ -41,78 +36,27 @@ def apply_filter():
     filter_name = request.form.get('filter_name')
     image = request.files['image']
 
-    if not filter_name and not image:
-        if not image:
-            return {
-                'message': 'Image is not found',
-                'success': False
-            }
-        if not filter_name:
-            return {
-                'message': 'You did not enter any filter',
-                'success': False
-            }
-    else:
-        image_name = str(uuid.uuid4()) + '.' + image.filename.split('.')[-1]
-        create_directory(original_image_path)
+    response = filter_request(filter_name, image)
+    if response.get('success'):
+        image_name = response.get('image_name')
+        context = get_image_response_path(image_name)
 
-        image.save(os.path.join(original_image_path, image_name))
+        return context
 
-        if filter_name == 'cartoon':
-            cantoon_filter(original_image_path, image_name)
-        elif filter_name == 'pencil_sketch':
-            pencil_sketch(original_image_path, image_name)
-        elif filter_name == 'background_remove':
-            remove_background(original_image_path, image_name)
-        else:
-            return {
-                'message': 'You entered wrong filters. Please visit /available-filter/ to see the correct name',
-                'success': False
-            }
-
-    return {
-        'message': filter_name,
-        'success': True
-    }
+    return response
 
 
 @app.route('/filter/', methods=['POST'])
 def filter_apply():
     filter_name = request.form.get('filter_name')
     image = request.files['image']
-    image_name = ''
-    if not filter_name and not image:
-        if not image:
-            return {
-                'message': 'Image is not found',
-                'success': False
-            }
-        if not filter_name:
-            return {
-                'message': 'You did not enter any filter',
-                'success': False
-            }
-    else:
-        image_name = str(uuid.uuid4()) + '.' + image.filename.split('.')[-1]
 
-        # create_directory(image_path)
-        create_directory(original_image_path)
+    response = filter_request(filter_name, image)
 
-        image.save(os.path.join(original_image_path, image_name))
+    if response.get('success'):
+        return redirect(url_for('result', image_name=response.get('image_name')))
 
-        if filter_name == 'cartoon':
-            cantoon_filter(original_image_path, image_name)
-        elif filter_name == 'pencil_sketch':
-            pencil_sketch(original_image_path, image_name)
-        elif filter_name == 'background_remove':
-            remove_background(original_image_path, image_name)
-        else:
-            return {
-                'message': 'You entered wrong filters. Please visit /available-filter/ to see the correct name',
-                'success': False
-            }
-
-    return redirect(url_for('result', image_name=image_name))
+    return response
 
 
 @app.route('/')
@@ -123,13 +67,9 @@ def home():
 @app.route('/result')
 def result():
     image_name = request.args.get('image_name')
-    original_path = os.path.join(original_image_path, image_name)
-    filter_path = os.path.join(filter_image_path, image_name)
-    context = {
-        'original_image': original_path,
-        'filter_image': filter_path
-    }
-    return render_template('result.html', **context)
+    image_path = get_image_response_path(image_name)
+
+    return render_template('result.html', **image_path)
 
 
 if __name__ == '__main__':
