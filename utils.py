@@ -24,6 +24,7 @@ def filter_request(filter_name, image):
     from filter.pencil_sketch import pencil_sketch
     from filter.cantoon_filter import cantoon_filter
     from filter.remove_bg import remove_background
+    from filter.whitening import whitening_method1, whitening_method2, whitening_method3, whitening_method4
 
     if not filter_name and not image:
         if not image:
@@ -49,6 +50,14 @@ def filter_request(filter_name, image):
             pencil_sketch(original_image_path, image_name)
         elif filter_name == 'background_remove':
             remove_background(original_image_path, image_name)
+        elif filter_name == 'whitening_1':
+            whitening_method1(original_image_path, image_name)
+        elif filter_name == 'whitening_2':
+            whitening_method2(original_image_path, image_name)
+        elif filter_name == 'whitening_3':
+            whitening_method3(original_image_path, image_name)
+        elif filter_name == 'whitening_4':
+            whitening_method4(original_image_path, image_name)
         else:
             return {
                 'message': 'You entered wrong filters. Please visit /available-filter/ to see the correct name',

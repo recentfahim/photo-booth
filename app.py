@@ -24,6 +24,10 @@ def available_filters():
         'message': 'These are available filter you can apply. Please enter the filter name in the given api endpoint',
         'success': True,
         'data': {
+            'whitening_1': 'This filter result of applied of method 1',
+            'whitening_2': 'This filter result of applied of method 2',
+            'whitening_3': 'This filter result of applied of method 3',
+            'whitening_4': 'This filter result of applied of method 4',
             'cartoon': 'Creating a filter that transforms images into cartoon-like representations, with exaggerated features and simplified details.',
             'pencil_sketch': 'Implementing a filter that converts images into pencil sketches, mimicking the appearance of hand-drawn sketches.',
             'background_remove': 'Implementing a feature that allows users to remove the background from images, leaving only the foreground subject.'

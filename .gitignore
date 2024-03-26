@@ -13,3 +13,5 @@ static/original_image/
 static/filter_image/
 photo-booth.zip
 filter/face_acne
+filter/.DS_Store
+filter/pretrained_model
