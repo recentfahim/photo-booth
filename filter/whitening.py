@@ -73,6 +73,18 @@ def whitening_method2(img_folder, img_name):
 
 def whitening_method3(img_folder, img_name):
     image = cv2.imread(img_folder + '/' + img_name)
+    contrast = 1.05  # Contrast control ( 0 to 127)
+    brightness = 2  # Brightness control (0-100)
+
+    result_image = cv2.addWeighted(image, contrast, image, 0, brightness)
+
+    cv2.imwrite(filter_image_output(img_folder) + img_name, result_image)
+
+    return result_image
+
+
+def whitening_method5(img_folder, img_name):
+    image = cv2.imread(img_folder + '/' + img_name)
 
     import torch
     from torchvision import transforms
