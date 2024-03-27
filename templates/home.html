@@ -1,5 +1,8 @@
 {% extends 'layout.html' %}
 {% block title %} Home {% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/slick-loader.min.css') }}" />
+{% endblock %}
 
 {% block content %}
     <div class="container mx-auto mt-4">
@@ -31,7 +34,7 @@
                 </select>
             </div>
             <div class="flex items-center justify-center w-20 mt-5">
-                <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+                <button type="submit" onclick="start_loading()" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
             </div>
         </form>
       </div>
@@ -43,6 +46,7 @@
 {% endblock %}
 
 {% block scripts %}
+    <script src="{{ url_for('static', filename='js/slick-loader.min.js') }}"></script>
     <script>
         const input = document.getElementById('dropzone-file');
         const container = document.getElementById('image-container');
@@ -60,5 +64,10 @@
 
             reader.readAsDataURL(file);
         });
+
+        function start_loading() {
+            SlickLoader.setText("Image Filter", "Applying");
+            SlickLoader.enable();
+        }
     </script>
 {% endblock %}
