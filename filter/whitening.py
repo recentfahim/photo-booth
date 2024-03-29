@@ -74,65 +74,41 @@ def whitening_method2(img_folder, img_name):
 def whitening_method3(img_folder, img_name):
     image = cv2.imread(img_folder + '/' + img_name)
 
-    import torch
-    from torchvision import transforms
-    from skin_segment.models import load_model
+    from .skin_segment.evaluate import evaluate
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    result_image, result_mask = evaluate(img_folder + '/' + img_name)
 
-    model = torch.load('pretrained_model/model_segmentation_skin_30.pth', map_location=device)
-    model = load_model(models['FCNResNet101'], model)
-    model.to(device).eval()
+    # Remove white border from the segmented image
+    result_mask = cv2.cvtColor(result_mask, cv2.COLOR_BGR2GRAY)
+    _, result_mask = cv2.threshold(result_mask, 1, 255, cv2.THRESH_BINARY)  # Remove any non-zero values
+    result_mask = cv2.merge([result_mask, result_mask, result_mask])
 
-    fn_image_transform = transforms.Compose(
-        [
-            transforms.Lambda(lambda image_path: _load_image(image_path)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-        ]
-    )
+    # Apply whitening to the segmented image
+    kernel = np.array([[0, -1, 0],
+                       [-1, 5, -1],
+                       [0, -1, 0]])
+    result_image = cv2.filter2D(result_image, -1, kernel)
 
-    image = fn_image_transform(image_file)
+    # Merge the whitened segmented image with the real image
+    output_image = cv2.addWeighted(image, 1, result_image, 0.6, 0)  # Adjust the alpha value (0.6) as needed
 
-    with torch.no_grad():
-        image = image.to(device).unsqueeze(0)
-        results = model(image)['out']
-        results = torch.sigmoid(results)
 
-        results = results > args.threshold
+    cv2.imwrite(filter_image_output(img_folder) + img_name, output_image)
+    cv2.imwrite(filter_image_output(img_folder) + 'mask_' + img_name, result_mask)
 
-    for category, category_image, mask_image in draw_results(image[0], results[0], categories=model.categories):
-        if args.save:
-            output_name = f'results_{category}_{image_file.name}'
-            logging.info(f'writing output to {output_name}')
-            cv2.imwrite(str(output_name), category_image)
-            cv2.imwrite(f'mask_{category}_{image_file.name}', mask_image)
-
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    face_classifier = cv2.CascadeClassifier(
-        cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-    )
-
-    face = face_classifier.detectMultiScale(
-        image, scaleFactor=1.1, minNeighbors=5, minSize=(50, 50)
-    )
-    # image_output = cv2.cvtColor(image_yuv, cv2.COLOR_YUV2BGR)
-
-    for (x, y, w, h) in face:
-        # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 4)
-        face_roi = image[y:y + h, x:x + w]
-
-        # Increase brightness by scaling the face ROI
-        brightness_scale = 1.2
-        face_roi[:, :, 0] = cv2.convertScaleAbs(face_roi[:, :, 0], alpha=brightness_scale, beta=0)
-
-    img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-    return img_name
+    return result_image
 
 
 def whitening_method4(img_folder, img_name):
+    import random
+    image = cv2.imread(img_folder + '/' + img_name)
+
+    intensity = np.ones(image.shape, dtype="uint8") * 15
+    img_rgb = cv2.add(image, intensity)
+
+    cv2.imwrite(filter_image_output(img_folder) + img_name, img_rgb)
+
+    return img_rgb
     image = cv2.imread(img_folder + '/' + img_name)
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -151,11 +127,56 @@ def whitening_method4(img_folder, img_name):
 
         # Increase brightness by scaling the face ROI
         brightness_scale = 1.2
-        face_roi[:, :, 0] = cv2.convertScaleAbs(face_roi[:, :, 0], alpha=brightness_scale, beta=0)
+        face_roi[:, :, 0] = np.clip(face_roi[:, :, 0] * brightness_scale, 0, 255)
+        # face_roi[:, :, 0] = cv2.convertScaleAbs(face_roi[:, :, 0], alpha=brightness_scale, beta=0)
 
-    img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # img_rgb = cv2.cvtColor(gray_image, cv2.COLOR_BGR2RGB)
+    result_image = cv2.bitwise_or(face_roi, image)
 
-    return img_name
+    cv2.imwrite(filter_image_output(img_folder) + img_name, result_image)
+
+    return result_image
+
+
+def whitening_method5(img_folder, img_name):
+    image = cv2.imread(img_folder + '/' + img_name)
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+
+    lim = 255 - 20
+    v[v > lim] = 255
+    v[v <= lim] += 20
+
+    final_hsv = cv2.merge((h, s, v))
+    result_image = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+    cv2.imwrite(filter_image_output(img_folder) + img_name, result_image)
+
+    return result_image
+
+
+def whitening_method6(img_folder, img_name):
+    image = cv2.imread(img_folder + '/' + img_name)
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+    v = cv2.add(v, 15)
+    v[v > 255] = 255
+    v[v < 0] = 0
+    final_hsv = cv2.merge((h, s, v))
+    img = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+    cv2.imwrite(filter_image_output(img_folder) + img_name, img)
+
+    return img
+
+
+def whitening_method7(img_folder, img_name):
+    image = cv2.imread(img_folder + '/' + img_name)
+
+    intensity = np.ones(image.shape, dtype="uint8") * 15
+    img_rgb = cv2.add(image, intensity)
+
+    cv2.imwrite(filter_image_output(img_folder) + img_name, img_rgb)
+
+    return img_rgb
 
 
 # #
